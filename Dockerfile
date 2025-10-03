@@ -1,6 +1,6 @@
-FROM alpine:3.22
+FROM alpine:3.22 AS avif-builder
 
-RUN apk add git cmake yasm clang20 clang20-dev alpine-sdk
+RUN apk add git cmake yasm clang20 clang20-dev alpine-sdk perl
 RUN git clone -b v1.3.0 https://github.com/AOMediaCodec/libavif.git
 
 WORKDIR /libavif/ext
@@ -16,6 +16,7 @@ RUN cp Source/API/*.h include/svt-av1
 
 WORKDIR /libavif
 RUN cmake -S . -B build  \
+    -DAVIF_CODEC_AOM=LOCAL \
     -DAVIF_CODEC_SVT=LOCAL  \
     -DAVIF_LIBYUV=LOCAL  \
     -DAVIF_LIBSHARPYUV=LOCAL  \
@@ -26,4 +27,8 @@ RUN cmake -S . -B build  \
     -DBUILD_SHARED_LIBS=OFF
 RUN cmake --build build --config Release --parallel
 
-ENTRYPOINT ["/libavif/build/avifenc"]
+FROM alpine:3.22
+
+COPY --from=avif-builder /libavif/build/avifenc /usr/bin/avifenc
+
+ENTRYPOINT ["/usr/bin/avifenc"]
