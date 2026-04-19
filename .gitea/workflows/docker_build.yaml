@@ -17,6 +17,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            latest=true
+            prefix=
+            suffix=-amd64
           images: |
             git.prettysunflower.moe/prettysunflower/avif
             ghcr.io/prettysunflower/avif
@@ -58,6 +62,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          flavor: |
+            latest=true
+            prefix=
+            suffix=-arm64
           images: |
             git.prettysunflower.moe/prettysunflower/avif
             ghcr.io/prettysunflower/avif
