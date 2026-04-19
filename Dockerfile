@@ -1,13 +1,16 @@
-FROM alpine:3.22 AS avif-builder
+FROM alpine:3.23 AS avif-builder
 
-RUN apk add git cmake yasm clang20 clang20-dev alpine-sdk perl
+RUN apk add git cmake yasm clang21 clang21-dev alpine-sdk perl ninja
 
 ENV CC=clang CXX=clang++
 
-RUN git clone -b v1.4.1 https://github.com/AOMediaCodec/libavif.git
+RUN git clone -b v1.4.1 --depth 1 https://github.com/AOMediaCodec/libavif.git
 
 WORKDIR /libavif/ext
-RUN git clone -b v3.0.2-B https://github.com/BlueSwordM/svt-av1-psyex.git SVT-AV1
+RUN git clone -b v3.13.3 --depth 1 https://aomedia.googlesource.com/aom 
+RUN cmake -G Ninja -S aom -B aom/build.libavif -DBUILD_SHARED_LIBS=OFF -DCONFIG_PIC=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_DOCS=0 -DENABLE_EXAMPLES=0 -DENABLE_TESTDATA=0 -DENABLE_TESTS=0 -DENABLE_TOOLS=0
+RUN cmake --build aom/build.libavif --config Release --parallel
+RUN git clone -b v3.0.2-B --depth 1 https://github.com/BlueSwordM/svt-av1-psyex.git SVT-AV1
 
 WORKDIR /libavif/ext/SVT-AV1/Build/linux
 RUN ./build.sh --native --static --release --enable-lto --no-apps
